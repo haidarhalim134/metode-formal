@@ -1,33 +1,75 @@
-abstract sig User {
+one sig Text {}
+one sig EncryptedText {}
+
+sig User {
   userId: Int,
- treshold: Int
+  userName: Text,
+  password: EncryptedText,
+ criteria: Int,
+ criteriaCurrency: Text,
+ email: Text,
+ notiFrom: some Ticket
 }
 
 abstract sig NotificationSent {}
 
 one sig Yes, No extends NotificationSent {}
 
-abstract sig Event {
+sig Ticket {
  eventId: Int,
  price1: Int,
  price2: Int,
- notification: NotificationSent
+ notification: NotificationSent,
+ source: one DataScraper
 }
 
-fact EventConstraint {
-  all e: Event |
+one sig Dashboard {
+  tickets: some Ticket,
+  currentUser: one User,
+  scheduler: one Scheduler
+}
+
+one sig TicketDatabase{
+  tickets: some Ticket
+}
+
+one sig Scheduler{
+  
+}
+
+sig DataScraper{
+   belong_to: set Scheduler
+}
+
+fact TicketConstraint {
+  all e: Ticket |
    e.price1 > 0 and e.price2 > 0
+}
+
+fact TicketSourceConstraint {
+  all t: Ticket | some s: DataScraper | t.source = s
+}
+
+fact d {
+ all d: DataScraper | some s: Scheduler | d.belong_to = s
 }
 
 fact UserConstraint {
  all u: User | 
-   u.treshold > 1
+   u.criteria > 0 && u.criteria < 2
 }
 
-pred Notification {
-  all t: Event, u: User |
+
+fact Notification {
+  all t: Ticket |
     (t.notification = Yes) =>
-      t.price1 - t.price2 = u.treshold
+      some u: User | some n: u.notiFrom | t = n
 }
 
-run Notification for 3 but exactly  5 Event
+fact ValidNotif {
+  all u: User |
+    (some u.notiFrom) => 
+        all t: u.notiFrom | (t.price1 - t.price2) <= u.criteria
+}
+
+run {} for 5 Ticket, 5 User, 1 DataScraper
