@@ -50,15 +50,9 @@ fact TicketSourceConstraint {
   all t: Ticket | some s: DataScraper | t.source = s
 }
 
-fact d {
+fact DSContraint {
  all d: DataScraper | some s: Scheduler | d.belong_to = s
 }
-
-fact UserConstraint {
- all u: User | 
-   u.criteria > 0 && u.criteria < 2
-}
-
 
 fact Notification {
   all t: Ticket |
@@ -72,4 +66,24 @@ fact ValidNotif {
         all t: u.notiFrom | (t.price1 - t.price2) <= u.criteria
 }
 
-run {} for 5 Ticket, 5 User, 1 DataScraper
+assert CheckNotif {
+  all t: Ticket |
+      (t.notification = Yes) =>
+          all u: User |
+               (t in u.notiFrom) =>
+                   (t.price1 - t.price2) <= u.criteria
+}
+
+pred CriteriaOneOrMore {
+ all u: User | 
+   u.criteria > 0
+}
+
+pred CriteriaZero {
+ all u: User | 
+   u.criteria <1
+}
+
+run CriteriaZero for 5 Ticket, 5 User, 2 DataScraper
+
+check CheckNotif
