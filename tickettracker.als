@@ -65,15 +65,6 @@ fact ValidNotif {
      all t: u.notiFrom | (t.price1 - t.price2) >= u.criteria
 }
 
-
-assert CheckNotif {
-  all t: Ticket |
-      (t.notification = Yes) =>
-          all u: User |
-               (t in u.notiFrom) =>
-                   (t.price1 - t.price2) >= u.criteria
-}
-
 pred CriteriaOneOrMore {
  all u: User | 
    u.criteria > 6
@@ -84,25 +75,7 @@ pred CriteriaZero {
    u.criteria <1
 }
 
-pred NotifSent {
-  some t: Ticket |
-    t.notification = Yes
-}
-
-assert ValidSample {
-   all u: User | 
-    u.criteria < 1 implies
-   NotifSent
-}
-
-assert InvalidSample {
- all u: User | 
-   u.criteria > 6 implies
- NotifSent
-}
-
 assert NoNotificationHighCriteria {
- // all u: User | u.criteria > 6 implies no t: u.notiFrom | t.notification = Yes
 all u: User | u.criteria > 6 implies
  no t: Ticket |
       (t.notification = Yes) =>
@@ -111,7 +84,6 @@ all u: User | u.criteria > 6 implies
                    (t.price1 - t.price2) >= u.criteria
 }
 
-// Asserting that notification should be sent when all user criteria are below 0
 assert NotificationLowCriteria {
   all u: User | u.criteria < 0 implies 
  some t: Ticket |
@@ -121,13 +93,7 @@ assert NotificationLowCriteria {
                    (t.price1 - t.price2) >= u.criteria
 }
 
-
-// TODO: tambah kasus dimana assertion salah
-
-//run CriteriaZero for 5 Ticket, 5 User, 3 DataScraper
-
-check InvalidSample
-check ValidSample
+run CriteriaZero for 5 Ticket, 5 User, 3 DataScraper
 
 check NoNotificationHighCriteria
 
