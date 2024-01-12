@@ -1,5 +1,6 @@
 one sig Text {}
 one sig EncryptedText {}
+one sig Dict {}
 
 sig User {
   userId: Int,
@@ -34,18 +35,31 @@ one sig TicketDatabase{
 }
 
 one sig Scheduler{
-  
+	scrapersProfile: Dict
+}
+
+one sig Notifier {
+	criteriaList: Dict,
+	userDB: some User
 }
 
 sig DataScraper{
+	name: Text,
+	startURL: Text,
+	concurrentRequest: Int,
    belong_to: set Scheduler,
    dataPipeline: one DataPipeline,
    requestPipeline: RequestPipeline
 }
 
-sig DataPipeline {}
+sig DataPipeline {
+	ticketDB: TicketDatabase
+}
 
-sig RequestPipeline {}
+sig RequestPipeline {
+	proxyList: Text,
+	userAgentList: Text
+}
 
 fact TicketConstraint {
   all e: Ticket |
