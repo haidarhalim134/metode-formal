@@ -38,8 +38,14 @@ one sig Scheduler{
 }
 
 sig DataScraper{
-   belong_to: set Scheduler
+   belong_to: set Scheduler,
+   dataPipeline: one DataPipeline,
+   requestPipeline: RequestPipeline
 }
+
+sig DataPipeline {}
+
+sig RequestPipeline {}
 
 fact TicketConstraint {
   all e: Ticket |
@@ -62,12 +68,16 @@ fact Notification {
 
 fact ValidNotif {
   all u: User |
-     all t: u.notiFrom | (t.price1 - t.price2) >= u.criteria
+     all t: u.notiFrom | sub[t.price1, t.price2] >= u.criteria 
+}
+
+fact NotifYes {
+   all t: Ticket | all u: User | (t in u.notiFrom) => t.notification = Yes
 }
 
 pred CriteriaOneOrMore {
  all u: User | 
-   u.criteria > 6
+   u.criteria > 5
 }
 
 pred CriteriaZero {
@@ -77,23 +87,25 @@ pred CriteriaZero {
 
 assert NoNotificationHighCriteria {
 all u: User | u.criteria > 6 implies
- no t: Ticket |
-      (t.notification = Yes) =>
-          all u: User |
-               (t in u.notiFrom) =>
-                   (t.price1 - t.price2) >= u.criteria
+// no t: Ticket |
+//      (t.notification = Yes) =>
+//          all u: User |
+//               (t in u.notiFrom) =>
+//                   (t.price1 - t.price2) >= u.criteria
+no t: Ticket | t.notification = Yes
 }
 
 assert NotificationLowCriteria {
   all u: User | u.criteria < 0 implies 
- some t: Ticket |
-      (t.notification = Yes) =>
-          all u: User |
-               (t in u.notiFrom) =>
-                   (t.price1 - t.price2) >= u.criteria
+// some t: Ticket |
+//      (t.notification = Yes) =>
+//          all u: User |
+//               (t in u.notiFrom) =>
+//                   (t.price1 - t.price2) >= u.criteria
+some t: Ticket | t.notification = Yes
 }
 
-run CriteriaZero for 5 Ticket, 5 User, 3 DataScraper
+run CriteriaOneOrMore for 5 Ticket, 5 User, 3 DataScraper, 3 DataPipeline, 3 RequestPipeline
 
 check NoNotificationHighCriteria
 
