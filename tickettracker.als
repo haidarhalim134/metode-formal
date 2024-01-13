@@ -2,7 +2,7 @@ one sig Text {}
 one sig EncryptedText {}
 one sig Dict {}
 
-sig User {
+one sig User {
   userId: Int,
   userName: Text,
   password: EncryptedText,
@@ -10,6 +10,8 @@ sig User {
  criteriaCurrency: Text,
  email: Text,
  notiFrom: some Ticket
+} {
+	userId > 0
 }
 
 abstract sig NotificationSent {}
@@ -22,6 +24,9 @@ sig Ticket {
  price2: Int,
  notification: NotificationSent,
  source: one DataScraper
+} {
+	this in TicketDatabase.tickets
+	eventId > 0
 }
 
 one sig Dashboard {
@@ -50,15 +55,21 @@ sig DataScraper{
    belong_to: set Scheduler,
    dataPipeline: one DataPipeline,
    requestPipeline: RequestPipeline
+} {
+	this in Ticket.source
 }
 
 sig DataPipeline {
 	ticketDB: TicketDatabase
+} {
+	this in DataScraper.dataPipeline
 }
 
 sig RequestPipeline {
 	proxyList: Text,
 	userAgentList: Text
+} {
+	this in DataScraper.requestPipeline
 }
 
 fact TicketConstraint {
@@ -119,7 +130,22 @@ assert NotificationLowCriteria {
 some t: Ticket | t.notification = Yes
 }
 
-run CriteriaOneOrMore for 5 Ticket, 5 User, 3 DataScraper, 3 DataPipeline, 3 RequestPipeline
+fact noDuplicate {
+	all t1, t2: Ticket | t1 != t2 =>
+		t1.source not in t2.source &&
+		t1.eventId not in t2.eventId
+	all us1, us2: User | us1 != us2 =>
+		us1.userId not in us2.userId
+
+
+	all rp1, rp2: DataScraper | rp1 != rp2 =>
+		rp1.requestPipeline not in rp2.requestPipeline
+
+
+	#Ticket > 3
+}
+
+run CriteriaOneOrMore for 5 Ticket, 5 DataScraper, 3 DataPipeline, 5 RequestPipeline
 
 check NoNotificationHighCriteria
 
