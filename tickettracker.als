@@ -116,7 +116,7 @@ pred CriteriaZero {
 }
 
 assert NoNotificationHighCriteria {
-all u: User | u.criteria > 6 implies
+all u: User | u.criteria > 5 implies
 // no t: Ticket |
 //      (t.notification = Yes) =>
 //          all u: User |
