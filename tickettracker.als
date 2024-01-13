@@ -25,7 +25,10 @@ sig Ticket {
  notification: NotificationSent,
  source: one DataScraper
 } {
+// Memastikan kalau Ticket hanya akan muncul jika berada didalam TicketDatabase.tickets
 	this in TicketDatabase.tickets
+
+// Memastikan kalau idnya tidak negatif
 	eventId > 0
 }
 
@@ -56,6 +59,7 @@ sig DataScraper{
    dataPipeline: one DataPipeline,
    requestPipeline: RequestPipeline
 } {
+// Memastikan kalau Datascraper hanya akan muncul jika berada didalam Ticket.source
 	this in Ticket.source
 }
 
@@ -69,6 +73,7 @@ sig RequestPipeline {
 	proxyList: Text,
 	userAgentList: Text
 } {
+// Memastikan kalau RequestPipeline hanya akan muncul jika berada didalam DataScraper.requestPipeline
 	this in DataScraper.requestPipeline
 }
 
@@ -130,19 +135,16 @@ assert NotificationLowCriteria {
 some t: Ticket | t.notification = Yes
 }
 
+
+// Memastikan tidak ada yang mempunyai set yang sama
 fact noDuplicate {
 	all t1, t2: Ticket | t1 != t2 =>
 		t1.source not in t2.source &&
 		t1.eventId not in t2.eventId
 	all us1, us2: User | us1 != us2 =>
 		us1.userId not in us2.userId
-
-
 	all rp1, rp2: DataScraper | rp1 != rp2 =>
 		rp1.requestPipeline not in rp2.requestPipeline
-
-
-	#Ticket > 3
 }
 
 run CriteriaOneOrMore for 5 Ticket, 5 DataScraper, 3 DataPipeline, 5 RequestPipeline
