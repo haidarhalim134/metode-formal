@@ -2,7 +2,11 @@ one sig Text {}
 one sig EncryptedText {}
 one sig Dict {}
 
-one sig User {
+one sig UserInfo {
+  usersList: some User
+}
+
+sig User {
   userId: Int,
   userName: Text,
   password: EncryptedText,
@@ -12,6 +16,8 @@ one sig User {
  notiFrom: some Ticket
 } {
 	userId > 0
+
+	this in UserInfo.usersList
 }
 
 abstract sig NotificationSent {}
@@ -35,7 +41,8 @@ sig Ticket {
 one sig Dashboard {
   tickets: some Ticket,
   currentUser: one User,
-  scheduler: one Scheduler
+  scheduler: one Scheduler,
+  userInfo: UserInfo
 }
 
 one sig TicketDatabase{
@@ -147,7 +154,7 @@ fact noDuplicate {
 		rp1.requestPipeline not in rp2.requestPipeline
 }
 
-run CriteriaOneOrMore for 5 Ticket, 5 DataScraper, 3 DataPipeline, 5 RequestPipeline
+run CriteriaOneOrMore for 5 User, 5 Ticket, 5 DataScraper, 3 DataPipeline, 5 RequestPipeline
 
 check NoNotificationHighCriteria
 
