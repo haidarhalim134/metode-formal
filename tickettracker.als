@@ -105,22 +105,12 @@ pred CriteriaZero {
    u.criteria <1
 }
 assert NoNotificationHighCriteria {
-all u: User | u.criteria > 5 implies
-// no t: Ticket |
-//      (t.notification = Yes) =>
-//          all u: User |
-//               (t in u.notiFrom) =>
-//                   (t.price1 - t.price2) >= u.criteria
-no t: Ticket | t.notification = Yes
+  all u: User | u.criteria > 5 implies
+  no t: Ticket | t.notification = Yes
 }
 assert NotificationLowCriteria {
   all u: User | u.criteria < 0 implies 
-// some t: Ticket |
-//      (t.notification = Yes) =>
-//          all u: User |
-//               (t in u.notiFrom) =>
-//                   (t.price1 - t.price2) >= u.criteria
-some t: Ticket | t.notification = Yes
+  some t: Ticket | t.notification = Yes
 }
 // Memastikan tidak ada yang mempunyai set yang sama
 fact noDuplicate {
